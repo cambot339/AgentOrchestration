@@ -1,7 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AgentOrchestration.App/AgentOrchestration.App.csproj" />
+    <Project Path="src/AgentOrchestration.Beginner.Coding/AgentOrchestration.Beginner.Coding.csproj" />
+    <Project Path="src/AgentOrchestration.Beginner.Planning/AgentOrchestration.Beginner.Planning.csproj" />
     <Project Path="src/AgentOrchestration.Core/AgentOrchestration.Core.csproj" />
+    <Project Path="src/AgentOrchestration.LocalModelLab/AgentOrchestration.LocalModelLab.csproj" />
     <Project Path="src/AgentOrchestration.Networking/AgentOrchestration.Networking.csproj" />
   </Folder>
 </Solution>
