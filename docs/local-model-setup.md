@@ -84,10 +84,10 @@ Use this machine for:
 1. Install .NET 8+ on every machine.
 2. Install one local model runtime per machine before mixing multiple tools.
 3. Run `/home/runner/work/AgentOrchestration/AgentOrchestration/src/AgentOrchestration.LocalModelLab` on your main machine to verify your first Ollama model call works locally.
-3. Run `AgentOrchestration.Networking` in `listen` mode on each worker.
-4. Use `browse` from the main machine to confirm local discovery works.
-5. Start by dispatching harmless command envelopes and reviewing the generated logs.
-6. Only after that, add real model execution adapters to the main app.
+4. Run `AgentOrchestration.Networking` in `listen` mode on each worker.
+5. Use `browse` from the main machine to confirm local discovery works.
+6. Start by dispatching harmless command envelopes and reviewing the generated logs.
+7. Only after that, add real model execution adapters to the main app.
 
 ## Safety and practicality notes
 
