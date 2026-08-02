@@ -14,6 +14,7 @@ AgentOrchestration is a small C# playground for learning how to dispatch AI-agen
 
 - `/src/AgentOrchestration.Core` - shared orchestration models and a minimal failover dispatcher.
 - `/src/AgentOrchestration.App` - the main learning-oriented runtime bootstrap.
+- `/src/AgentOrchestration.LocalModels` - a beginner Ollama client and local-agent runner.
 - `/src/AgentOrchestration.Networking` - a separate networking runtime and debug tool for discovery and dispatch logging.
 - `/docs/local-model-setup.md` - dedicated guide for downloading and setting up local model runtimes.
 - `/docs/networking-runtime.md` - networking project notes and suggested expansion points.
@@ -43,6 +44,23 @@ dotnet run --project /home/runner/work/AgentOrchestration/AgentOrchestration/src
 ```
 
 This runs a simple demonstration where the first preferred machine fails and the dispatcher automatically continues on the next viable node.
+
+## Run the beginner local-model project
+
+Install Ollama, download a model, and start the Ollama service before running:
+
+```bash
+ollama pull llama3.1:8b
+dotnet run --project /home/runner/work/AgentOrchestration/AgentOrchestration/src/AgentOrchestration.LocalModels -- "Give me one idea for a beginner coding exercise."
+```
+
+The project calls Ollama's local HTTP API directly and prints the model response. You can select another model or endpoint without editing code:
+
+```bash
+OLLAMA_MODEL=qwen2.5:7b OLLAMA_ENDPOINT=http://localhost:11434 dotnet run --project /home/runner/work/AgentOrchestration/AgentOrchestration/src/AgentOrchestration.LocalModels
+```
+
+The `OllamaTaskRunner` also implements `IAgentTaskRunner`, so it can be used by the main dispatcher after you are comfortable with the standalone example.
 
 ## Run the networking runtime
 
