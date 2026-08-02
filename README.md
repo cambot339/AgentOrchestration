@@ -14,8 +14,10 @@ AgentOrchestration is a small C# playground for learning how to dispatch AI-agen
 
 - `/src/AgentOrchestration.Core` - shared orchestration models and a minimal failover dispatcher.
 - `/src/AgentOrchestration.App` - the main learning-oriented runtime bootstrap.
+- `/src/AgentOrchestration.LocalModel` - beginner project for running a local Ollama model and connecting it to the dispatcher.
 - `/src/AgentOrchestration.Networking` - a separate networking runtime and debug tool for discovery and dispatch logging.
 - `/docs/local-model-setup.md` - dedicated guide for downloading and setting up local model runtimes.
+- `/docs/local-model-project.md` - step-by-step walkthrough of the LocalModel project.
 - `/docs/networking-runtime.md` - networking project notes and suggested expansion points.
 
 ## Current bootstrap
@@ -44,6 +46,19 @@ dotnet run --project /home/runner/work/AgentOrchestration/AgentOrchestration/src
 
 This runs a simple demonstration where the first preferred machine fails and the dispatcher automatically continues on the next viable node.
 
+## Run the local model beginner project
+
+Install Ollama from https://ollama.com, pull a model, then run:
+
+```bash
+ollama pull llama3.1:8b
+dotnet run --project src/AgentOrchestration.LocalModel
+```
+
+This walks through four steps: health check, model listing, sending a prompt,
+and dispatching through `AgentDispatchService` with a real `OllamaAgentRunner`.
+See `docs/local-model-project.md` for the full walkthrough.
+
 ## Run the networking runtime
 
 Start a listener on each machine that should participate:
@@ -66,7 +81,7 @@ dotnet run --project /home/runner/work/AgentOrchestration/AgentOrchestration/src
 
 ## Suggested next milestones
 
-1. Add real agent adapters for GitHub Copilot APIs, Ollama, llama.cpp, or LM Studio.
+1. Swap `DemoAgentTaskRunner` in `AgentOrchestration.App` with `OllamaAgentRunner` from the LocalModel project.
 2. Move machine definitions into JSON configuration files.
 3. Add health checks and retry backoff before dispatching to cloud fallback.
 4. Add authenticated command transport once you move beyond a trusted local network.

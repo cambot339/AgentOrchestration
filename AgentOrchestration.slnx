@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/AgentOrchestration.App/AgentOrchestration.App.csproj" />
     <Project Path="src/AgentOrchestration.Core/AgentOrchestration.Core.csproj" />
+    <Project Path="src/AgentOrchestration.LocalModel/AgentOrchestration.LocalModel.csproj" />
     <Project Path="src/AgentOrchestration.Networking/AgentOrchestration.Networking.csproj" />
   </Folder>
 </Solution>
