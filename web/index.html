@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Orchestration</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header>
+        <h1>Copilot ↔ Claude Orchestration Assistant</h1>
+        <p class="lede">Create a plan, generate sub-agent prompts, paste structured responses, and safely write reviewed artifacts into your workspace.</p>
+        <p class="warning">Always review generated content before writing files. The app never executes generated code.</p>
+      </header>
+
+      <section class="panel">
+        <h2>Workflow</h2>
+        <ol class="workflow">
+          <li>Define plan</li>
+          <li>Generate prompt</li>
+          <li>Copy to agent</li>
+          <li>Paste response</li>
+          <li>Review artifacts</li>
+          <li>Write files</li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2>Session</h2>
+        <div class="row">
+          <select id="sessionSelect"></select>
+          <button id="refreshSessionsButton" type="button">Refresh</button>
+        </div>
+        <div class="row">
+          <input id="sessionNameInput" type="text" placeholder="New session name" />
+          <button id="createSessionButton" type="button">Create session</button>
+        </div>
+        <p id="sessionMeta" class="muted"></p>
+      </section>
+
+      <section class="panel">
+        <h2>1. Define plan</h2>
+        <label for="goalInput">Goal</label>
+        <textarea id="goalInput" rows="3" placeholder="What are you trying to accomplish?"></textarea>
+
+        <label for="constraintsInput">Constraints (one per line)</label>
+        <textarea id="constraintsInput" rows="4" placeholder="Keep dependencies minimal"></textarea>
+
+        <label for="stepsInput">Plan steps (one per line)</label>
+        <textarea id="stepsInput" rows="6" placeholder="Design API&#10;Generate files&#10;Review output"></textarea>
+
+        <button id="savePlanButton" type="button">Save plan</button>
+      </section>
+
+      <section class="panel">
+        <h2>2. Generate prompt</h2>
+        <div class="row">
+          <select id="stepSelect"></select>
+          <button id="generatePromptButton" type="button">Generate prompt</button>
+          <button id="copyPromptButton" type="button">Copy prompt</button>
+        </div>
+        <pre id="promptOutput" class="codeblock">No prompt generated yet.</pre>
+      </section>
+
+      <section class="panel">
+        <h2>3-4. Paste response</h2>
+        <p id="currentPromptMeta" class="muted">Responses will be linked to the most recent generated prompt.</p>
+        <textarea id="responseInput" rows="14" placeholder='Paste strict JSON or a ```json fenced block here.'></textarea>
+        <div class="row">
+          <button id="saveResponseButton" type="button">Save response</button>
+          <span id="responseStatus" class="muted"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Latest agent branch</h2>
+        <div id="responseDetails" class="stack">
+          <p class="muted">No responses captured yet.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>5-6. Review artifacts</h2>
+        <div id="artifactsContainer" class="stack"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
