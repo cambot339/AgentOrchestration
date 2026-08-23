@@ -17,13 +17,63 @@ The MVP web app supports this workflow:
 
 Sessions persist to local JSON files in `data/sessions/`, so you can restart the app and continue where you left off.
 
+## Installing Node.js via NVM in PowerShell (Windows)
+
+The recommended way to manage Node.js on Windows is **nvm-windows**, which lets you install and switch between multiple Node versions without administrator privileges.
+
+### 1. Install nvm-windows
+
+Download and run the latest installer from the [nvm-windows releases page](https://github.com/coreybutler/nvm-windows/releases):
+
+```powershell
+# Download the installer (adjust the version number as needed)
+$nvmVersion = "1.1.12"
+$installerUrl = "https://github.com/coreybutler/nvm-windows/releases/download/$nvmVersion/nvm-setup.exe"
+$installerPath = "$env:TEMP\nvm-setup.exe"
+
+Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+Start-Process -FilePath $installerPath -Wait
+```
+
+Alternatively, if you have [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) available:
+
+```powershell
+winget install CoreyButler.NVMforWindows
+```
+
+Close and reopen your PowerShell window after installation so that the `nvm` command is available on your `PATH`.
+
+### 2. Install Node.js and npm
+
+```powershell
+# Install a specific Node.js version (LTS recommended)
+nvm install 20
+
+# Use that version in the current shell
+nvm use 20
+
+# Verify the installation
+node --version   # should print v20.x.x
+npm --version    # should print a recent npm version
+```
+
+> **Tip:** Run PowerShell as **Administrator** when using `nvm install` and `nvm use`, because nvm-windows creates a directory junction that requires elevated permissions on some systems.
+
+### 3. Confirm everything is working
+
+```powershell
+node -e "console.log('Node is working!')"
+```
+
+---
+
 ## Quick start
 
 Requirements:
 
 - Windows 11 with PowerShell (default documented setup)
-- Node.js 20+
-- npm
+- Node.js 20+ (see [Installing Node.js via NVM in PowerShell](#installing-nodejs-via-nvm-in-powershell-windows) above)
+- npm (bundled with Node.js)
 
 Linux/macOS should also work, but the examples below assume a local Windows-first workflow.
 
