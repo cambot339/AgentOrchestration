@@ -39,6 +39,13 @@ ScaffoldingReadMe.txt
 # dotenv environment variables file
 .env
 
+# Node.js app artifacts
+node_modules/
+dist/
+data/**/*.json
+tmp-output/
+npm-debug.log*
+
 # Others
 ~$*
 *~
