@@ -16,6 +16,7 @@ const elements = {
   responseInput: document.getElementById('responseInput'),
   saveResponseButton: document.getElementById('saveResponseButton'),
   responseStatus: document.getElementById('responseStatus'),
+  responseDetails: document.getElementById('responseDetails'),
   artifactsContainer: document.getElementById('artifactsContainer')
 };
 
@@ -96,6 +97,7 @@ function renderSession() {
     elements.constraintsInput.value = '';
     elements.stepsInput.value = '';
     elements.stepSelect.innerHTML = '';
+    elements.responseDetails.innerHTML = '<p class="muted">No responses captured yet.</p>';
     elements.artifactsContainer.innerHTML = '<p class="muted">No artifacts yet.</p>';
     return;
   }
@@ -105,7 +107,27 @@ function renderSession() {
   elements.constraintsInput.value = (session.plan.constraints || []).join('\n');
   elements.stepsInput.value = (session.plan.steps || []).join('\n');
   renderStepOptions(session.plan.steps || []);
+  renderLatestResponse(session.responses?.[0] || null);
   renderArtifacts(session.responses.flatMap((response) => response.artifacts || []));
+}
+
+function renderLatestResponse(response) {
+  if (!response) {
+    elements.responseDetails.innerHTML = '<p class="muted">No responses captured yet.</p>';
+    return;
+  }
+
+  const nextQuestions = (response.parsed?.next_questions || [])
+    .map((question) => `<li>${escapeHtml(question)}</li>`)
+    .join('');
+
+  elements.responseDetails.innerHTML = `
+    <article class="artifact">
+      <p><strong>Branch:</strong> ${escapeHtml(response.parsed?.branch || '(not provided)')}</p>
+      <p><strong>Summary:</strong> ${escapeHtml(response.parsed?.summary || '')}</p>
+      ${nextQuestions ? `<div><strong>Next questions</strong><ul>${nextQuestions}</ul></div>` : '<p class="muted">No follow-up questions.</p>'}
+    </article>
+  `;
 }
 
 function renderStepOptions(steps) {

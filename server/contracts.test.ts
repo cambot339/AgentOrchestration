@@ -14,6 +14,8 @@ test('buildPrompt includes the selected plan step and strict JSON instructions',
 
   assert.equal(prompt.stepText, 'Produce files');
   assert.match(prompt.prompt, /Return strict JSON only/);
+  assert.match(prompt.prompt, /local git repository/);
+  assert.match(prompt.prompt, /branch/);
   assert.match(prompt.prompt, /Current step \(2\/2\):/);
 });
 
@@ -21,6 +23,7 @@ test('parseResponse accepts fenced JSON and validates artifacts', () => {
   const parsed = parseResponse(`\`\`\`json
 {
   "summary": "Done",
+  "branch": "copilot/test-branch",
   "artifacts": [
     {
       "path": "server/output.ts",
@@ -33,18 +36,25 @@ test('parseResponse accepts fenced JSON and validates artifacts', () => {
 \`\`\``);
 
   assert.equal(parsed.summary, 'Done');
+  assert.equal(parsed.branch, 'copilot/test-branch');
   assert.equal(parsed.artifacts[0]?.path, 'server/output.ts');
 });
 
 test('validateParsedResponse rejects malformed payloads', () => {
   assert.throws(
-    () => validateParsedResponse({ summary: '', artifacts: [], next_questions: [] }),
+    () => validateParsedResponse({ summary: '', branch: 'copilot/test', artifacts: [], next_questions: [] }),
     /summary/
+  );
+
+  assert.throws(
+    () => validateParsedResponse({ summary: 'ok', artifacts: [], next_questions: [] }),
+    /branch/
   );
 
   assert.throws(
     () => validateParsedResponse({
       summary: 'ok',
+      branch: 'copilot/test',
       artifacts: [{ content: 'x', rationale: 'why' }],
       next_questions: []
     }),

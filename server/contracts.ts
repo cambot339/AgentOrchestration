@@ -26,6 +26,7 @@ export interface ArtifactRecord {
 
 export interface ParsedResponsePayload {
   summary: string;
+  branch: string;
   artifacts: Array<{
     path: string;
     content: string;
@@ -105,6 +106,7 @@ export function buildPrompt(plan: Plan, stepIndex: number): PromptRecord {
 
   const prompt = [
     'You are a sub-agent helping with a human-in-the-loop orchestration session.',
+    'Assume the workspace is a local git repository.',
     'Return strict JSON only. Do not wrap the JSON in markdown fences. Do not add commentary before or after the JSON.',
     '',
     'Goal:',
@@ -120,6 +122,7 @@ export function buildPrompt(plan: Plan, stepIndex: number): PromptRecord {
     JSON.stringify(
       {
         summary: 'Short summary of the completed step.',
+        branch: 'copilot/implement-selected-step',
         artifacts: [
           {
             path: 'relative/path/to/file.ext',
@@ -134,6 +137,7 @@ export function buildPrompt(plan: Plan, stepIndex: number): PromptRecord {
     ),
     '',
     'Rules:',
+    '- Include the git branch name that contains the requested code changes in the branch field.',
     '- Keep artifact paths relative. Windows-style backslashes are allowed and will be normalized.',
     '- Put complete file contents in each artifacts[].content field.',
     '- Use an empty array when there are no artifacts or no next questions.',
@@ -175,6 +179,10 @@ export function validateParsedResponse(input: unknown): ParsedResponsePayload {
     throw new HttpError(400, 'Response JSON must include a non-empty string field named "summary".');
   }
 
+  if (typeof record.branch !== 'string' || !record.branch.trim()) {
+    throw new HttpError(400, 'Response JSON must include a non-empty string field named "branch".');
+  }
+
   if (!Array.isArray(record.next_questions) || record.next_questions.some((item) => typeof item !== 'string')) {
     throw new HttpError(400, 'Response JSON must include a string array field named "next_questions".');
   }
@@ -210,6 +218,7 @@ export function validateParsedResponse(input: unknown): ParsedResponsePayload {
 
   return {
     summary: record.summary.trim(),
+    branch: record.branch.trim(),
     next_questions: record.next_questions.map((question) => question.trim()),
     artifacts
   };

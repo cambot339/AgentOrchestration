@@ -1,6 +1,6 @@
 # AgentOrchestration
 
-AgentOrchestration now includes a basic Node.js app for **human-in-the-loop orchestration** between GitHub Copilot and external agents such as Claude. The app helps you create a plan, generate strict JSON prompts for sub-agents, paste their responses back in manually, review produced artifacts, and safely write those artifacts into your project workspace.
+AgentOrchestration now includes a basic Node.js app for **human-in-the-loop orchestration** between GitHub Copilot and external agents such as Claude. The app assumes you are coordinating work inside a local git repository: create a plan, generate strict JSON prompts for sub-agents, paste their responses back in manually, review the reported branch and produced artifacts, and safely write selected files into your project workspace.
 
 The original .NET playground remains in this repository under `src/` for experimentation with local/cloud dispatch and networking.
 
@@ -12,7 +12,7 @@ The MVP web app supports this workflow:
 2. Generate a structured sub-agent prompt for a specific step
 3. Copy that prompt into Claude, Copilot, or another external agent
 4. Paste the sub-agent response back into the app
-5. Validate and review returned artifacts
+5. Review the reported branch and returned artifacts
 6. Write reviewed files into a safe workspace path
 
 Sessions persist to local JSON files in `data/sessions/`, so you can restart the app and continue where you left off.
@@ -61,7 +61,7 @@ Copy `.env.example` to `.env` if you want to customize runtime paths or the port
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port for the web app |
 | `DATA_DIR` | `./data` | Directory used for persisted session JSON |
-| `WORKSPACE_ROOT` | `.` | Root directory artifacts may be written into; use `.` for the repo or a Windows path such as `C:\dev\your-project` |
+| `WORKSPACE_ROOT` | `.` | Root directory artifacts may be written into; point this at the root of the local git repository you want to update |
 
 ## API overview
 
@@ -83,6 +83,7 @@ The built-in prompt template asks sub-agents to return strict JSON with:
 ```json
 {
   "summary": "Short summary of the completed step.",
+  "branch": "copilot/implement-selected-step",
   "artifacts": [
     {
       "path": "relative/path/to/file.ext",
@@ -99,6 +100,8 @@ The built-in prompt template asks sub-agents to return strict JSON with:
 You can paste either raw JSON or a fenced ```json``` block back into the app.
 
 Artifact paths can use either `\` or `/`. The server normalizes relative paths before validating and writing them, so Windows-style relative paths are supported.
+
+The `branch` value should name the local git branch that contains the requested code changes so you can review or continue the work in your repository.
 
 ## Safety notes
 
@@ -120,6 +123,22 @@ Artifact paths can use either `\` or `/`. The server normalizes relative paths b
 3. Add artifact diffing before writes.
 4. Add authentication before exposing the app on a broader network.
 5. Add richer session history, notes, and prompt/result comparisons.
+
+## Requested feature checklist
+
+- [x] Create, list, and reopen orchestration sessions
+- [x] Edit a plan with goal, constraints, and ordered steps
+- [x] Generate a strict sub-agent prompt for a selected plan step
+- [x] Accept pasted JSON responses and persist them on disk
+- [x] Capture the local git branch reported by the agent for requested code changes
+- [x] Review returned artifacts before writing them into the local repository workspace
+- [x] Block absolute-path and traversal escapes during writes
+- [x] Provide a minimal browser UI for the manual orchestration loop
+- [ ] Add multiple prompt templates for research, code review, and patch generation
+- [ ] Add stronger schema validation and response-repair guidance
+- [ ] Add artifact diffing before writes
+- [ ] Add authentication before exposing the app beyond a trusted local machine
+- [ ] Add richer session history, notes, and prompt/result comparison tools
 
 ## Existing .NET playground
 
