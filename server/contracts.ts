@@ -134,7 +134,7 @@ export function buildPrompt(plan: Plan, stepIndex: number): PromptRecord {
     ),
     '',
     'Rules:',
-    '- Keep artifact paths relative.',
+    '- Keep artifact paths relative. Windows-style backslashes are allowed and will be normalized.',
     '- Put complete file contents in each artifacts[].content field.',
     '- Use an empty array when there are no artifacts or no next questions.',
     '- Never omit required fields.'

@@ -141,7 +141,7 @@ function renderArtifacts(artifacts) {
       <p>${escapeHtml(artifact.rationale)}</p>
       <label>Content</label>
       <textarea rows="10" readonly>${escapeHtml(artifact.content)}</textarea>
-      <label>Write path (relative to workspace root)</label>
+      <label>Write path (relative to workspace root; \ or / accepted)</label>
       <input type="text" value="${escapeAttribute(artifact.path)}" />
       <div class="row">
         <button type="button">Write file</button>

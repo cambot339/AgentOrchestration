@@ -21,9 +21,11 @@ Sessions persist to local JSON files in `data/sessions/`, so you can restart the
 
 Requirements:
 
+- Windows 11 with PowerShell (default documented setup)
 - Node.js 20+
 - npm
-- Ubuntu/Linux-friendly shell environment
+
+Linux/macOS should also work, but the examples below assume a local Windows-first workflow.
 
 Install dependencies:
 
@@ -59,7 +61,7 @@ Copy `.env.example` to `.env` if you want to customize runtime paths or the port
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port for the web app |
 | `DATA_DIR` | `./data` | Directory used for persisted session JSON |
-| `WORKSPACE_ROOT` | `.` | Root directory artifacts may be written into |
+| `WORKSPACE_ROOT` | `.` | Root directory artifacts may be written into; use `.` for the repo or a Windows path such as `C:\dev\your-project` |
 
 ## API overview
 
@@ -95,6 +97,8 @@ The built-in prompt template asks sub-agents to return strict JSON with:
 ```
 
 You can paste either raw JSON or a fenced ```json``` block back into the app.
+
+Artifact paths can use either `\` or `/`. The server normalizes relative paths before validating and writing them, so Windows-style relative paths are supported.
 
 ## Safety notes
 
