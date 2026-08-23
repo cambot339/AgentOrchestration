@@ -28,7 +28,7 @@ Requirements:
 Install dependencies:
 
 ```bash
-cd /home/runner/work/AgentOrchestration/AgentOrchestration
+cd <repo-root>
 npm install
 ```
 
@@ -130,5 +130,5 @@ The repository still includes the original .NET learning projects:
 Build the .NET solution:
 
 ```bash
-dotnet build /home/runner/work/AgentOrchestration/AgentOrchestration/AgentOrchestration.slnx
+dotnet build AgentOrchestration.slnx
 ```

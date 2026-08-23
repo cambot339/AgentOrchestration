@@ -41,4 +41,13 @@ test('validateParsedResponse rejects malformed payloads', () => {
     () => validateParsedResponse({ summary: '', artifacts: [], next_questions: [] }),
     /summary/
   );
+
+  assert.throws(
+    () => validateParsedResponse({
+      summary: 'ok',
+      artifacts: [{ content: 'x', rationale: 'why' }],
+      next_questions: []
+    }),
+    /path/
+  );
 });

@@ -12,6 +12,7 @@ const elements = {
   generatePromptButton: document.getElementById('generatePromptButton'),
   copyPromptButton: document.getElementById('copyPromptButton'),
   promptOutput: document.getElementById('promptOutput'),
+  currentPromptMeta: document.getElementById('currentPromptMeta'),
   responseInput: document.getElementById('responseInput'),
   saveResponseButton: document.getElementById('saveResponseButton'),
   responseStatus: document.getElementById('responseStatus'),
@@ -84,6 +85,9 @@ function renderSession() {
   const session = state.currentSession;
   state.currentPrompt = session?.prompts?.[0] || null;
   elements.promptOutput.textContent = state.currentPrompt?.prompt || 'No prompt generated yet.';
+  elements.currentPromptMeta.textContent = state.currentPrompt
+    ? `Responses will be linked to prompt step ${state.currentPrompt.stepIndex + 1}: ${state.currentPrompt.stepText}`
+    : 'Responses will be linked to the most recent generated prompt.';
   elements.responseStatus.textContent = '';
 
   if (!session) {
@@ -211,16 +215,12 @@ async function generatePrompt() {
     return;
   }
 
-  const prompt = await request(`/api/sessions/${state.currentSession.id}/prompts`, {
+  await request(`/api/sessions/${state.currentSession.id}/prompts`, {
     method: 'POST',
     body: JSON.stringify({ stepIndex: Number(elements.stepSelect.value) })
   });
 
-  state.currentPrompt = prompt;
-  elements.promptOutput.textContent = prompt.prompt;
   await loadSession(state.currentSession.id);
-  state.currentPrompt = prompt;
-  elements.promptOutput.textContent = prompt.prompt;
 }
 
 async function saveResponse() {
@@ -266,7 +266,7 @@ function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('"', '&quot;');
 }
 
-elements.refreshSessionsButton.addEventListener('click', () => loadSessions());
+elements.refreshSessionsButton.addEventListener('click', () => loadSessions().catch(showError));
 elements.createSessionButton.addEventListener('click', () => createSession().catch(showError));
 elements.sessionSelect.addEventListener('change', () => loadSession(elements.sessionSelect.value).catch(showError));
 elements.savePlanButton.addEventListener('click', () => savePlan().catch(showError));

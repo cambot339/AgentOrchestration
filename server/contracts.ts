@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { HttpError } from './errors.js';
 
 export interface Plan {
   goal: string;
@@ -99,7 +100,7 @@ export function normalizeStringArray(input: unknown): string[] {
 export function buildPrompt(plan: Plan, stepIndex: number): PromptRecord {
   const stepText = plan.steps[stepIndex];
   if (!stepText) {
-    throw new Error('The requested plan step does not exist.');
+    throw new HttpError(400, 'The requested plan step does not exist.');
   }
 
   const prompt = [
@@ -157,7 +158,7 @@ export function parseResponse(rawText: string): ParsedResponsePayload {
     parsed = JSON.parse(candidate);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown JSON parse error.';
-    throw new Error(`Response must contain valid JSON. ${message}`);
+    throw new HttpError(400, `Response must contain valid JSON. ${message}`);
   }
 
   return validateParsedResponse(parsed);
@@ -165,39 +166,39 @@ export function parseResponse(rawText: string): ParsedResponsePayload {
 
 export function validateParsedResponse(input: unknown): ParsedResponsePayload {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
-    throw new Error('Response JSON must be an object.');
+    throw new HttpError(400, 'Response JSON must be an object.');
   }
 
   const record = input as Record<string, unknown>;
 
   if (typeof record.summary !== 'string' || !record.summary.trim()) {
-    throw new Error('Response JSON must include a non-empty string field named "summary".');
+    throw new HttpError(400, 'Response JSON must include a non-empty string field named "summary".');
   }
 
   if (!Array.isArray(record.next_questions) || record.next_questions.some((item) => typeof item !== 'string')) {
-    throw new Error('Response JSON must include a string array field named "next_questions".');
+    throw new HttpError(400, 'Response JSON must include a string array field named "next_questions".');
   }
 
   if (!Array.isArray(record.artifacts)) {
-    throw new Error('Response JSON must include an array field named "artifacts".');
+    throw new HttpError(400, 'Response JSON must include an array field named "artifacts".');
   }
 
   const artifacts = record.artifacts.map((artifact, index) => {
     if (!artifact || typeof artifact !== 'object' || Array.isArray(artifact)) {
-      throw new Error(`Artifact at index ${index} must be an object.`);
+      throw new HttpError(400, `Artifact at index ${index} must be an object.`);
     }
 
     const artifactRecord = artifact as Record<string, unknown>;
     if (typeof artifactRecord.path !== 'string' || !artifactRecord.path.trim()) {
-      throw new Error(`Artifact at index ${index} must include a non-empty string field named "path".`);
+      throw new HttpError(400, `Artifact at index ${index} must include a non-empty string field named "path".`);
     }
 
     if (typeof artifactRecord.content !== 'string') {
-      throw new Error(`Artifact at index ${index} must include a string field named "content".`);
+      throw new HttpError(400, `Artifact at index ${index} must include a string field named "content".`);
     }
 
     if (typeof artifactRecord.rationale !== 'string' || !artifactRecord.rationale.trim()) {
-      throw new Error(`Artifact at index ${index} must include a non-empty string field named "rationale".`);
+      throw new HttpError(400, `Artifact at index ${index} must include a non-empty string field named "rationale".`);
     }
 
     return {
@@ -234,9 +235,16 @@ export function createResponseRecord(rawText: string, parsed: ParsedResponsePayl
 function extractJsonCandidate(rawText: string): string {
   const trimmed = rawText.trim();
   if (!trimmed) {
-    throw new Error('Response text is required.');
+    throw new HttpError(400, 'Response text is required.');
   }
 
-  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  return fencedMatch?.[1]?.trim() || trimmed;
+  if (trimmed.startsWith('```')) {
+    const firstLineBreak = trimmed.indexOf('\n');
+    const closingFence = trimmed.lastIndexOf('```');
+    if (firstLineBreak !== -1 && closingFence > firstLineBreak) {
+      return trimmed.slice(firstLineBreak + 1, closingFence).trim();
+    }
+  }
+
+  return trimmed;
 }

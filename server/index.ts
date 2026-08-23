@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import express, { type Request, type Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -13,6 +14,7 @@ import {
   type ArtifactRecord,
   type SessionRecord
 } from './contracts.js';
+import { HttpError } from './errors.js';
 import { resolveWorkspacePath } from './pathSafety.js';
 import { SessionStore } from './storage.js';
 
@@ -26,6 +28,20 @@ const port = Number.parseInt(process.env.PORT || '3000', 10);
 
 const app = express();
 const store = new SessionStore(dataDirectory);
+const artifactWriteRateLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many artifact write requests. Please retry shortly.' }
+});
+const pageRateLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many page requests. Please retry shortly.' }
+});
 
 app.use(express.json({ limit: '2mb' }));
 
@@ -68,7 +84,7 @@ app.put('/api/sessions/:id/plan', asyncRoute(async (request, response) => {
 }));
 
 app.post('/api/sessions/:id/prompts', asyncRoute(async (request, response) => {
-  const stepIndex = Number.parseInt(`${request.body?.stepIndex ?? ''}`, 10);
+  const stepIndex = parseStepIndex(request.body?.stepIndex);
   if (!Number.isInteger(stepIndex)) {
     response.status(400).json({ error: 'A numeric stepIndex is required.' });
     return;
@@ -94,7 +110,7 @@ app.get('/api/sessions/:id/artifacts', asyncRoute(async (request, response) => {
   response.json(flattenArtifacts(session));
 }));
 
-app.post('/api/sessions/:id/artifacts/write', asyncRoute(async (request, response) => {
+app.post('/api/sessions/:id/artifacts/write', artifactWriteRateLimiter, asyncRoute(async (request, response) => {
   const writes = Array.isArray(request.body?.writes) ? request.body.writes : [];
   if (writes.length === 0) {
     response.status(400).json({ error: 'At least one artifact write request is required.' });
@@ -132,14 +148,24 @@ app.post('/api/sessions/:id/artifacts/write', asyncRoute(async (request, respons
   });
 }));
 
-app.use(express.static(webDirectory));
-app.get(/.*/, (_request, response) => {
+app.use(pageRateLimiter, express.static(webDirectory));
+app.get(/.*/, pageRateLimiter, (request, response) => {
+  if (request.path.startsWith('/api/')) {
+    response.status(404).json({ error: 'API route not found.' });
+    return;
+  }
+
   response.sendFile(path.join(webDirectory, 'index.html'));
 });
 
 app.use((error: unknown, _request: Request, response: Response, _next: unknown) => {
+  if (error instanceof HttpError) {
+    response.status(error.statusCode).json({ error: error.message });
+    return;
+  }
+
   const message = error instanceof Error ? error.message : 'Unexpected server error.';
-  response.status(resolveErrorStatus(message)).json({ error: message });
+  response.status(500).json({ error: message });
 });
 
 await store.initialize();
@@ -180,23 +206,18 @@ function asyncRoute(
   };
 }
 
-function resolveErrorStatus(message: string): number {
-  if (message === 'Session not found.' || message.includes('was not found')) {
-    return 404;
-  }
-
-  if (
-    message.includes('must') ||
-    message.includes('required') ||
-    message.includes('cannot') ||
-    message.includes('does not exist')
-  ) {
-    return 400;
-  }
-
-  return 500;
-}
-
 function getRouteId(request: Request): string {
   return Array.isArray(request.params.id) ? request.params.id[0] ?? '' : request.params.id;
+}
+
+function parseStepIndex(value: unknown): number {
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string' && /^\d+$/.test(value)) {
+    return Number.parseInt(value, 10);
+  }
+
+  return Number.NaN;
 }
